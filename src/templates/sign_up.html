@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <form action="/sign-up" method="POST" autocomplete="off">
+        <div>
+            <p>Chat handle</p>
+            <input type="text" name="handle" />
+        </div>
+        <div>
+            <p>Email</p>
+            <input type="email" name="email" />
+        </div>
+        <div>
+            <p>Password</p>
+            <input type="password" name="password" />
+        </div>
+        <div>
+            <button type="submit">Go</button>
+        </div>
+    </form>
+    <p>
+        <a href="/login">Back to login</a>
+    </p>
+{% endblock content %}

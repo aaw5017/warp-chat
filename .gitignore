@@ -1,0 +1,6 @@
+.env
+TODOS.md
+
+data/
+migrations/
+target/
