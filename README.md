@@ -10,6 +10,14 @@ My sqlite3 DB resides in the `./data` directory, but it can live anywhere, as lo
 
 Create an `.env` file in the root directory and copy the contents of `.env.example` into it, replacing the placeholder values with real ones.
 
+## Running migrations
+
+Once you have your `sqlite` DB set up and your `.env` file's `DATABASE_URL` is set correctly, you should be able to run the migrations with
+
+```shell
+sqlx migrate run
+```
+
 ## Running the app
 
 1. `cargo update`
