@@ -35,6 +35,12 @@ pub fn handle(socket: Ws) -> impl Reply {
         let my_id = NEXT_USER_ID.fetch_add(1, Ordering::Relaxed);
 
         let (mut ws_client, mut ws_stream) = websocket.split();
+
+        // make mpsc unbounded channel
+        // let unbounded_channel = mpsc::unbounded_channel();
+
+        //
+
         let mut broadcast_rx = BROADCAST_CHANNEL.0.subscribe();
 
         tokio::spawn(async move {

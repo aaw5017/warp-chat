@@ -1,7 +1,10 @@
 use crate::routes::rejections::AppRejection;
 use std::collections::HashMap;
 use tera::{Context, Tera};
-use warp::{Filter, Rejection, Reply};
+use warp::{
+    http::header::{HeaderMap, HeaderValue},
+    Filter, Rejection, Reply,
+};
 
 mod auth;
 mod db;
@@ -72,22 +75,26 @@ async fn handle_signup(form: HashMap<String, String>) -> Result<String, Rejectio
     return Err(AppRejection::default().into());
 }
 
-async fn handle_chat(session_cookie: String) -> Result<impl Reply, Rejection> {
-    if auth::verify_cookie(&session_cookie).is_ok() {
-        if let Some(user_session) = db::get_session(&session_cookie).await {
-            let mut ctx = Context::new();
-            ctx.insert("csrf_token", &user_session.csrf_token);
+async fn handle_chat(maybe_cookie: Option<String>) -> Result<impl Reply, Rejection> {
+    if let Some(session_cookie) = maybe_cookie {
+        if auth::verify_cookie(&session_cookie).is_ok() {
+            if let Some(user_session) = db::get_session(&session_cookie).await {
+                let mut ctx = Context::new();
+                ctx.insert("csrf_token", &user_session.csrf_token);
 
-            if let Ok(html) = TERA.render("chat.html", &ctx) {
-                return Ok(warp::reply::html(html));
+                if let Ok(html) = TERA.render("chat.html", &ctx) {
+                    return Ok(warp::reply::html(html));
+                }
+
+                return Err(AppRejection::new(None, 500).into());
             }
-
-            return Err(AppRejection::new(None, 500).into());
         }
     }
 
     // TODO: Add location redirect headers here
-    return Err(AppRejection::new(None, 401).into());
+    let mut headers = HeaderMap::new();
+    headers.insert("Location", HeaderValue::from_static("/login"));
+    return Err(AppRejection::new(Some(headers), 303).into());
 }
 
 pub fn handle_assets() -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
@@ -157,13 +164,11 @@ pub fn handle_chat_routes() -> impl Filter<Extract = (impl Reply,), Error = Reje
 
     let chat = warp::get()
         .and(warp::path("chat"))
-        .and(warp::cookie::cookie::<String>("id"))
+        .and(warp::cookie::optional::<String>("id"))
         .and_then(handle_chat)
         .with(middleware::with_response_headers());
 
     let chat_ws = warp::ws().and(warp::path("ws")).map(websocket::handle);
 
-    // return index.or(chat).or(chat_ws);
-    //
-    return index.or(chat);
+    return index.or(chat).or(chat_ws);
 }
