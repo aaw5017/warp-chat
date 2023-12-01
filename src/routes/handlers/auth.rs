@@ -1,4 +1,3 @@
-use crate::AEAD_KEY;
 use anyhow::Result;
 use argon2::{
     password_hash::{rand_core::OsRng, Error, PasswordHasher, SaltString},
@@ -6,6 +5,21 @@ use argon2::{
 };
 use csrf::{ChaCha20Poly1305CsrfProtection, CsrfProtection};
 use data_encoding::BASE64;
+
+lazy_static! {
+    pub static ref AEAD_KEY: [u8; 32] = {
+        let aead_key_var = dotenv::var("AEAD_KEY").expect("AEAD_KEY not found in .env file!");
+        match aead_key_var.as_bytes().try_into() {
+            Ok(key) => {
+                return key;
+            }
+            Err(e) => {
+                eprintln!("Failure converting AEAD_KEY into array: {}", e);
+                std::process::exit(1);
+            }
+        }
+    };
+}
 
 const ONE_WEEK_SECONDS: u32 = 10;
 
@@ -26,17 +40,17 @@ pub fn get_new_token_pair() -> Result<(String, String)> {
     return Ok((token.b64_string(), cookie.b64_string()));
 }
 
-pub fn verify_cookie(cookie: String) -> Result<()> {
+pub fn verify_cookie(cookie: &str) -> Result<()> {
     let protect = get_protection();
 
     let cookie_bytes = BASE64.decode(cookie.as_bytes())?;
-    let raw = protect.parse_cookie(&cookie_bytes)?;
+    let _raw = protect.parse_cookie(&cookie_bytes)?;
 
     return Ok(());
 }
 
-pub fn verify_token_pair(token: &str, cookie: &str) -> Result<()> {
-    let protect = get_protection();
+pub fn verify_token_pair(_token: &str, _cookie: &str) -> Result<()> {
+    let _protect = get_protection();
     return Ok(());
 }
 

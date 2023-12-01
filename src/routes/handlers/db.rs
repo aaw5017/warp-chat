@@ -1,6 +1,22 @@
-use crate::DB;
+use async_once::AsyncOnce;
 use serde::Serialize;
-use sqlx::{Error, FromRow};
+use sqlx::{sqlite::SqlitePool, Error, FromRow};
+
+lazy_static! {
+    pub static ref DB: AsyncOnce<SqlitePool> = AsyncOnce::new(async {
+        let database_url = dotenv::var("DATABASE_URL").expect("DATABASE_URL not found in ENV!");
+
+        match SqlitePool::connect(&database_url).await {
+            Ok(db_pool) => {
+                return db_pool;
+            }
+            Err(e) => {
+                eprintln!("Db pool connection errors: {}", e);
+                std::process::exit(1);
+            }
+        }
+    });
+}
 
 #[derive(Debug, FromRow, Serialize)]
 pub struct Session {
@@ -99,6 +115,31 @@ pub async fn get_session(id: &str) -> Option<Session> {
     match result {
         Ok(session) => {
             return Some(session);
+        }
+        _ => {
+            return None;
+        }
+    }
+}
+
+pub async fn get_user_by_session(id: &str) -> Option<User> {
+    let db = DB.get().await;
+    let query = r#"
+        SELECT u.id, u.email, u.handle, '' as hashed_password
+        FROM sessions as s
+        INNER JOIN users as u 
+        ON s.user_id = u.id
+        WHERE s.id = ?
+        LIMIT 1;
+    "#;
+    let result = sqlx::query_as::<_, User>(query)
+        .bind(id)
+        .fetch_one(db)
+        .await;
+
+    match result {
+        Ok(user) => {
+            return Some(user);
         }
         _ => {
             return None;

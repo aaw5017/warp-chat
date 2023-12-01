@@ -1,11 +1,11 @@
-use crate::{auth, rejections};
+use crate::routes::rejections::AppRejection;
 use warp::{
     http::{
         header::{HeaderMap, HeaderValue},
         Response,
     },
     reply::with::WithHeaders,
-    Filter, Rejection, Reply,
+    Rejection, Reply,
 };
 
 pub fn with_response_headers() -> WithHeaders {
@@ -49,20 +49,5 @@ pub async fn with_new_session(session_id: String) -> Result<impl Reply, Rejectio
             .unwrap());
     }
 
-    return Err(rejections::Error::InternalServerError.into());
-}
-
-pub fn with_session_id_verification() -> impl Filter<Extract = (), Error = Rejection> + Clone {
-    return warp::any()
-        .and(warp::cookie::optional::<String>("id"))
-        .and_then(|maybe_cookie| async {
-            if let Some(cookie) = maybe_cookie {
-                if auth::verify_cookie(cookie).is_ok() {
-                    return Ok(());
-                }
-            }
-
-            return Err(warp::reject::custom(rejections::Error::Unauthorized));
-        })
-        .untuple_one();
+    return Err(AppRejection::new(None, 500).into());
 }

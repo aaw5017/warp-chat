@@ -5,7 +5,6 @@
 
     socket.addEventListener("open", function (event) {
       console.info("ws open");
-      socket.send("HI, SERVER!");
     });
 
     socket.addEventListener("message", function (event) {
@@ -14,6 +13,12 @@
 
     socket.addEventListener("close", function () {
       console.info("ws closed");
+    });
+
+    const btn = document.getElementById("send-btn");
+    const input = document.getElementById("message-input");
+    btn.addEventListener("click", function () {
+      input.value && socket.send(input.value);
     });
   });
 })();

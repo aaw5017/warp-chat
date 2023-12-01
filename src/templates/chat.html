@@ -1,4 +1,11 @@
 {% extends "base.html" %}
+{% block head %}
+    {% if csrf_token %}<meta name="csrf-token" value="{{ csrf_token }}" />{% endif %}
+{% endblock head %}
 {% block content %}
+    <div>
+        <input type="text" id="message-input" style="display: block;" />
+        <button type="button" id="send-btn">SEND</button>
+    </div>
     <script src="/assets/app.js"></script>
 {% endblock content %}
