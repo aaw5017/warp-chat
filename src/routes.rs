@@ -1,4 +1,4 @@
-use log::info;
+
 use std::convert::Infallible;
 use warp::{http::Response, reject, Filter, Rejection, Reply};
 

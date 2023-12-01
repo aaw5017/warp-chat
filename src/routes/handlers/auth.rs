@@ -44,13 +44,13 @@ pub fn verify_cookie(cookie: &str) -> Result<()> {
     let protect = get_protection();
 
     let cookie_bytes = BASE64.decode(cookie.as_bytes())?;
-    let raw = protect.parse_cookie(&cookie_bytes)?;
+    let _raw = protect.parse_cookie(&cookie_bytes)?;
 
     return Ok(());
 }
 
-pub fn verify_token_pair(token: &str, cookie: &str) -> Result<()> {
-    let protect = get_protection();
+pub fn verify_token_pair(_token: &str, _cookie: &str) -> Result<()> {
+    let _protect = get_protection();
     return Ok(());
 }
 

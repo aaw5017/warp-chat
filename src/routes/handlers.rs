@@ -103,7 +103,7 @@ pub fn handle_assets() -> impl Filter<Extract = (impl Reply,), Error = Rejection
         .and(warp::fs::dir("src/assets/"));
 }
 
-pub fn handle_login_routes() -> impl Filter<Extract = (impl Reply), Error = Rejection> + Clone {
+pub fn handle_login_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let login_page = warp::get()
         .and(warp::path("login"))
         .and_then(|| async {
@@ -129,7 +129,7 @@ pub fn handle_login_routes() -> impl Filter<Extract = (impl Reply), Error = Reje
     return login_page.or(login);
 }
 
-pub fn handle_sign_up_routes() -> impl Filter<Extract = (impl Reply), Error = Rejection> + Clone {
+pub fn handle_sign_up_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let sign_up_page = warp::get()
         .and(warp::path("sign-up"))
         .and_then(|| async {
