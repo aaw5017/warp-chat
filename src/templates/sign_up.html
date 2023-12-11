@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
     <form action="/sign-up" method="POST" autocomplete="off">
-        <div>
-            <p>Chat handle</p>
-            <input type="text" name="handle" />
+        <div class="form-field">
+            <label for="handle">Chat handle*</label>
+            <input type="text" name="handle" required />
         </div>
-        <div>
-            <p>Email</p>
-            <input type="email" name="email" />
+        <div class="form-field">
+            <label for="email">Email*</label>
+            <input type="email" name="email" required />
         </div>
-        <div>
-            <p>Password</p>
-            <input type="password" name="password" />
+        <div class="form-field">
+            <label for="password">Password</label>
+            <input type="password" name="password" required />
         </div>
-        <div>
-            <button type="submit">Go</button>
+        <div class="form-field">
+            <button type="submit">Sign me up</button>
         </div>
     </form>
-    <p>
+    <span>
         <a href="/login">Back to login</a>
-    </p>
+    </span>
 {% endblock content %}

@@ -6,13 +6,31 @@
         <meta charset="UTF-8" />
         <meta name="description" content="" />
         <meta name="keywords" content="" />
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="/assets/app.css" />
         {% block head %}
         {% endblock head %}
     </head>
     <body>
-        {% block content %}
-        {% endblock content %}
-    </body>
-</html>
+        <main>
+            <header>
+                <h1>
+                    {% if header_content %}
+                        {{ header_content }}
+                    {% else %}
+                        Chat App {%
+                        endif %}
+                    </h1>
+                </header>
+                <article class="content" data-hx-ext="response-targets">
+                    {% block content %}
+                    {% endblock content %}
+                </article>
+            </main>
+            {% block scripts %}
+            {% endblock scripts %}
+            <script src="/assets/htmx.min.js"></script>
+            <script src="/assets/htmx.extensions.js"></script>
+        </body>
+    </html>

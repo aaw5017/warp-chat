@@ -1,0 +1,94 @@
+/** RESETS **/
+:root {
+  --primary: #0ca4a5;
+  --error: #d90202;
+
+  font-size: 18px;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: sans-serif;
+  font-size: 1rem;
+  height: 100svh;
+  margin: 0;
+  padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+}
+
+ol,
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+p {
+  margin: 10px 0;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  align-items: center;
+  display: flex;
+  flex-basis: 65px;
+  justify-content: center;
+}
+
+button {
+  background: transparent;
+  background: var(--primary);
+  border-radius: 9999px;
+  border: 0 none;
+  color: #fff;
+  cursor: pointer;
+  display: block;
+  font-size: inherit;
+  margin: 0;
+  outline: 0 none;
+  padding: 10px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.has-error {
+  color: var(--error);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+#login-form {
+  align-self: center;
+}

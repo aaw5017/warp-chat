@@ -1,4 +1,4 @@
-use crate::routes::rejections::AppRejection;
+use super::rejections::AppRejection;
 use std::collections::HashMap;
 use tera::{Context, Tera};
 use warp::{
@@ -26,53 +26,6 @@ lazy_static! {
             }
         };
     };
-}
-
-async fn handle_login(form: HashMap<String, String>) -> Result<String, Rejection> {
-    if let (Some(email), Some(password)) = (form.get("email"), form.get("password")) {
-        if let Ok(user) = db::get_user_by_email(email).await {
-            if auth::verify_password(&user.hashed_password, &password).is_ok() {
-                // new token pair
-                if let Ok(token_pair) = auth::get_new_token_pair() {
-                    if let Ok(created_session_id) =
-                        db::refresh_user_session(user.id, token_pair).await
-                    {
-                        return Ok(created_session_id);
-                    }
-                }
-
-                return Err(AppRejection::new(None, 500).into());
-            }
-        }
-    }
-
-    return Err(AppRejection::default().into());
-}
-
-async fn handle_signup(form: HashMap<String, String>) -> Result<String, Rejection> {
-    if let (Some(handle), Some(email), Some(password)) =
-        (form.get("handle"), form.get("email"), form.get("password"))
-    {
-        let hashed_pw = match auth::get_new_hashed_password(password) {
-            Ok(hashed) => hashed,
-            Err(_) => {
-                return Err(AppRejection::new(None, 500).into());
-            }
-        };
-
-        // get token pair
-        if let Ok(token_pair) = auth::get_new_token_pair() {
-            if let Ok(session_id) =
-                db::create_new_user(&email, &handle, &hashed_pw, token_pair).await
-            {
-                return Ok(session_id);
-            }
-        }
-
-        return Err(AppRejection::new(None, 500).into());
-    }
-
-    return Err(AppRejection::default().into());
 }
 
 async fn handle_chat(maybe_cookie: Option<String>) -> Result<impl Reply, Rejection> {
@@ -124,9 +77,46 @@ pub fn handle_login_routes() -> impl Filter<Extract = impl Reply, Error = Reject
         .and(warp::body::content_length_limit(1024 * 32))
         .and(warp::body::form())
         .and_then(handle_login)
-        .and_then(middleware::with_new_session);
+        .and_then(middleware::with_new_session)
+        .recover(|rej: Rejection| async {
+            if let Some(app_rej) = rej.find::<AppRejection>() {
+                let msg = match app_rej.status_code {
+                    400 => "We can't find a user with that email/password combination.",
+                    _ => "Something bad happened.",
+                };
+
+                let reply = warp::reply::html(msg);
+                return Ok(warp::reply::with_status(
+                    reply,
+                    warp::http::StatusCode::BAD_REQUEST,
+                ));
+            }
+
+            return Err(rej);
+        });
 
     return login_page.or(login);
+}
+
+async fn handle_login(form: HashMap<String, String>) -> Result<String, Rejection> {
+    if let (Some(email), Some(password)) = (form.get("email"), form.get("password")) {
+        if let Ok(user) = db::get_user_by_email(email).await {
+            if auth::verify_password(&user.hashed_password, &password).is_ok() {
+                // new token pair
+                if let Ok(token_pair) = auth::get_new_token_pair() {
+                    if let Ok(created_session_id) =
+                        db::refresh_user_session(user.id, token_pair).await
+                    {
+                        return Ok(created_session_id);
+                    }
+                }
+
+                return Err(AppRejection::new(None, 500).into());
+            }
+        }
+    }
+
+    return Err(AppRejection::default().into());
 }
 
 pub fn handle_sign_up_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -153,6 +143,33 @@ pub fn handle_sign_up_routes() -> impl Filter<Extract = impl Reply, Error = Reje
         .and_then(middleware::with_new_session);
 
     return sign_up_page.or(sign_up);
+}
+
+async fn handle_signup(form: HashMap<String, String>) -> Result<String, Rejection> {
+    if let (Some(handle), Some(email), Some(password)) =
+        (form.get("handle"), form.get("email"), form.get("password"))
+    {
+        // very crappy back end validation...meh
+        if handle.is_empty() || email.is_empty() || password.is_empty() {
+            return Err(AppRejection::default().into());
+        }
+
+        // hash the pw
+        if let Ok(hashed_pw) = auth::get_new_hashed_password(password) {
+            // get token pair
+            if let Ok(token_pair) = auth::get_new_token_pair() {
+                if let Ok(session_id) =
+                    db::create_new_user(&email, &handle, &hashed_pw, token_pair).await
+                {
+                    return Ok(session_id);
+                }
+            }
+        }
+
+        return Err(AppRejection::new(None, 500).into());
+    }
+
+    return Err(AppRejection::default().into());
 }
 
 pub fn handle_chat_routes() -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {

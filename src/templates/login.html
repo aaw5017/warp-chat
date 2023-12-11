@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
-    <form action="/login" method="POST" autocomplete="off">
-        <div>
-            <p>Email</p>
-            <input type="email" name="email" />
+    <form data-hx-post="/login"
+          data-hx-target-error=".has-error"
+          autocomplete="off"
+          id="login-form">
+        <div class="error"></div>
+        <div class="form-field">
+            <label for="email">Email</label>
+            <input type="email" name="email" required />
         </div>
-        <div>
-            <p>Password</p>
-            <input type="password" name="password" />
+        <div class="form-field">
+            <label for="password">Password</label>
+            <input type="password" name="password" required />
         </div>
-        <div>
-            <button type="submit">Go</button>
-        </div>
+        <button class="full-width" type="submit">Log in</button>
     </form>
-    <p>
-        Don't have an account? <a href="/sign-up">Sign up here!</a>
-    </p>
+    <p class="has-error text-center"></p>
+    <span class="text-center">Don't have an account? <a href="/sign-up">Sign up here!</a></span>
 {% endblock content %}

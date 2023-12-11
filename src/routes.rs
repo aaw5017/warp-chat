@@ -1,4 +1,3 @@
-
 use std::convert::Infallible;
 use warp::{http::Response, reject, Filter, Rejection, Reply};
 
@@ -14,6 +13,7 @@ pub fn bind_routes() -> impl Filter<Extract = (impl Reply,), Error = Infallible>
 }
 
 async fn handle_rejection(rej: Rejection) -> Result<impl Reply, Infallible> {
+    log::info!("rejected!");
     if let Some(app_rej) = rej.find::<rejections::AppRejection>() {
         let mut resp = Response::builder().status(app_rej.status_code);
         let cloned_headers = app_rej.headers.clone();
